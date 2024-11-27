@@ -25,6 +25,7 @@ const routeServer = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     console.log("routing to the server........");
     if (firstServer != undefined) {
         server = firstServer;
+        console.log("url", req.url);
     }
     else {
         res.end("no servers available");
@@ -36,20 +37,37 @@ const routeServer = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     });
     if (server) {
         backendServers.push(server);
+        console.log("server ", backendServers);
     }
     yield axios({
         method: req.method,
         url: server,
+    }).then((response) => {
+        res.statusCode = 200;
+        const headers = new Headers({ 'Content-Type': 'text/plain' });
+        res.setHeaders(headers);
+        res.end(response.data);
     });
-    yield axios(req.url);
-    res.statusCode = 200;
-    res.end("response from python server");
 });
 server.listen('8000', 'localhost', () => {
     console.log("listening.....");
-    setTimeout(() => {
-        server.close(() => {
-            console.log('server on port 8000 closed successfully');
-        });
-    }, 10000);
+    setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
+        console.log("list of available servers:");
+        console.log(backendServers);
+        try {
+            yield axios({
+                method: "GET",
+                url: "http://localhost:8080/health"
+            }).then((response) => {
+                console.log("health ", response.data, response.status);
+            });
+        }
+        catch (err) {
+            console.log("server is down", err.port);
+            const server = `http://localhost:${err.port}/`;
+            backendServers = backendServers.filter((element) => element != server);
+            console.log(`server ${server} removed`);
+            console.log(backendServers);
+        }
+    }), 10000);
 });
