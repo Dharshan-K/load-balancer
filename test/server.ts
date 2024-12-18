@@ -8,22 +8,27 @@ const server = http.createServer((req: IncomingMessage,res: ServerResponse)=>{
     console.log("checking health.....")
     const headers = new Headers({ 'Content-Type' : 'text/plain'})
     res.setHeaders(headers)
-    res.end(true)
-    return
+    res.end("server is up")
+  }else if(req.url == "/sendFile"){
+    res.end(__dirname)
+  }else{
+    res.statusCode = 404;
+    res.end("Not Found");
   }
-  res.end("response from 8080")
 })
 
 const server2 = http.createServer((req: IncomingMessage,res: ServerResponse)=>{
   if(req.method == "GET" && req.url == "/health"){
     res.statusCode = 200
     console.log("checking health.....")
-    const headers = new Headers({ 'Content-Type' : 'text/plain'})
-    res.setHeaders(headers)
-    res.end(true)
-    return
+    res.setHeader('Content-Type' , 'text/plain')
+    res.end("server is up")
+  }else if(req.url == "/sendFile"){
+    res.end({data: __dirname,__filename})
+  }else{
+    res.statusCode = 404;
+    res.end("Not Found");
   }
-  res.end("response from 8081")
 })
 
 
